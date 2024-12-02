@@ -1,4 +1,4 @@
-# Cryptococcal meningitis prognostic model
+# Cryptococcal meningitis prognostic model - Periskope-CM
 # 02: Descriptive Analysis
 # Description: Analysis of Missingness, Description of cohort
 # Started: 04/10/23

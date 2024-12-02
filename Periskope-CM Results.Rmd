@@ -1,0 +1,486 @@
+---
+title: "PERISKOPE-CM Figures and Tables"
+author: "Tom Samuels, University College London"
+date: "`r Sys.Date()`"
+output: 
+    word_document:
+        reference_docx: template.docx
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(knitr)
+library(gtsummary)
+library(flextable)
+library(rms)
+library(metafor)
+library(ggpubr)
+library(htmltools)
+library(gt)
+library(DiagrammeR)
+load("CM_table_and_plot_objects_231123_v2.rda")
+knitr::opts_chunk$set(echo = TRUE, dpi = 300)
+knit_hooks$set(inline = function(x) {
+  prettyNum(x, big.mark=",")
+})
+```
+
+\newpage
+## Main results section
+
+#### Table 1: Baseline characteristics of the study cohort
+Characteristics are shown in the overall study cohort and stratified by two-week mortality outcome. ECOG = Eastern Cooperative Oncology Group performance status; GCS = Glasgow Coma Scale; CSF = cerebrospinal fluid; AmBd = amphotericin B deoxycholate; 5FC = flucytosine; FLU = fluconazole.
+<br>
+
+```{r table1, echo=F}
+tbl_summary_1 %>%
+  fontsize(size = 9, part = "all") %>%
+  set_table_properties(width = 1, layout = "autofit") %>%
+  align(align = "left", part = "all") %>%
+  valign(valign = "center", part = 'all')
+```
+
+\newpage
+#### Figure 1: Multivariable associations between selected predictors and outcome in primary research model
+Continuous variables were modelled using restricted cubic splines. The final model parameters are pooled across multiple imputed datasets (total sample size for model development = `r paste(samplesize_dev)` participants). For continuous variables, black lines represent point estimates and grey shaded regions represent 95% confidence intervals. For categorical variables, black dots represent point estimates, and black lines represent 95% confidence intervals. Treatment arm 1 through 5 represent 1) the liposomal-amphotericin-B Ambition regimen and the 1-week amphotericin-B + flucytosine (1wk AmBd + 5FC) arms from both ACTA and Ambition-cm trials, 2) 1 week amphotericin-B + fluconazole, 3) 2 weeks amphotericin-B + flucytosine, 4) 2 weeks amphotericin-B + fluconazole and 5) flucytosine + fluconazole oral combination regimen, respectively.  Treatment arm (1) was grouped in this way due to the finding of non-inferiority between the Ambition regimen and 1wk AmBd + 5FC arms in the Ambition-cm trial. Associations for the primary basic model are shown in the Supplementary Appendix (Supplementary Figure 4). ECOG = Eastern Cooperative Oncology Group performance status; GCS = Glasgow Coma Scale; CSF = cerebrospinal fluid.
+
+```{r figure 1, echo=F, fig.width=10, fig.height= 10}
+research_plot_assoc_mi
+```
+
+\newpage
+#### Figure 2a and 2b: Internal-external cross validation of the basic and research models by country
+Pooled estimates are calculated through random-effects meta-analysis (total sample size = `r paste(samplesize_dev)` participants). Countries with n < 100 participants or x < 20 deaths were amalgamated and grouped by similarity of healthcare environment. Dashed lines indicate lines of perfect calibration-in-the-large (0) and slope (1), respectively. Black squares indicate point estimates; bars indicate 95% confidence intervals; diamonds indicate pooled random-effects meta-analysis estimates. I2 values for c-statistic, calibration-in-the-large and calibration slope are shown in the figure footer. Bots = Botswana; SAfr = South Africa; Tan = Tanzania; Zam = Zambia; Zim = Zimbabwe.
+
+<br>
+
+#### Figure 2a - Basic Model
+```{r fig2a, echo=F, fig.width= 12, fig.height= 8, results='hide'}
+footnote_b <- paste0('I^2 values for c-statistic, calibration-in-the-large and calibration slope = ', basic_cstat_i2, ', ', basic_citl_i2, ' and ', basic_slope_i2, ', respectively.')
+
+par(fig=c(0,0.4,0,1))
+model.cstat.b <- rma(yi = cstat, sei = cstat.se,  method = "REML", test = "knha", data = iecv_master_pooled_b)
+summary(model.cstat.b)
+metafor::forest(model.cstat.b,
+                slab=iecv_master_pooled_b$location, xlab = "C-statistic", 
+                alim=c(0.4, 1.0), cex=1, cex.lab=1, top=0,mlab = "Meta-analysis",
+                xlim=c(0.23, 1.22))
+par(fig=c(0.4,0.7, 0,1), new=T)
+model.CITL.b <- rma(yi = citl, sei = citl.se, method = "REML",test = "knha", data = iecv_master_pooled_b)
+summary(model.CITL.b)
+metafor::forest(model.CITL.b, slab=NA, xlab = "Calibration in the large", alim=c(-1.0, 1.0), 
+                refline=0, cex=1, cex.lab=1, top=0, mlab = "",
+                xlim=c(-1.0, 2.7), at=c(-1, -0.5, 0, 0.5, 1))
+par(fig=c(0.7,1, 0,1), new=T)
+model.CS.b <- rma(yi = calslope, sei = calslope.se, method = "REML", test = "knha", data = iecv_master_pooled_b)
+summary(model.CS.b)
+metafor::forest(model.CS.b, slab=NA, xlab = "Calibration slope", alim=c(0.0, 2.0), 
+                refline=1, cex=1, cex.lab=1, top=0, mlab = "",
+                xlim=c(0.0, 3.0))
+mtext(footnote_b, side = 1, line = 4, adj = 1, cex = 1)
+```
+
+#### Figure 2b - Research Model
+```{r fig2b, echo=F, fig.width=12, fig.height=8, results= 'hide'}
+footnote_r <- paste0('I^2 values for c-statistic, calibration-in-the-large and calibration slope = ', research_cstat_i2, ', ', research_citl_i2, ' and ', research_slope_i2, ', respectively.')
+
+par(fig=c(0,0.4,0,1))
+model.cstat.r <- rma(yi = cstat, sei = cstat.se,  method = "REML", test = "knha", data = iecv_master_pooled_r)
+summary(model.cstat.r)
+metafor::forest(model.cstat.r,
+                slab=iecv_master_pooled_r$location, xlab = "C-statistic", 
+                alim=c(0.5, 1.0), cex=1, cex.lab=1, top=0,mlab = "Meta-analysis",
+                xlim=c(0.3, 1.22), at=c(0.5, 0.6, 0.7, 0.8, 0.9, 1.0))
+par(fig=c(0.4,0.7, 0,1), new=T)
+model.CITL.r <- rma(yi = citl, sei = citl.se, method = "REML",test = "knha", data = iecv_master_pooled_r)
+summary(model.CITL.r)
+metafor::forest(model.CITL.r, slab=NA, xlab = "Calibration in the large", alim=c(-1.0, 1.0), 
+                refline=0, cex=1, cex.lab=1, top=0, mlab = "",
+                xlim=c(-1.0, 2.5), at=c(-1, -0.5, 0, 0.5, 1))
+par(fig=c(0.7,1, 0,1), new=T)
+model.CS.r <- rma(yi = calslope, sei = calslope.se, method = "REML", test = "knha", data = iecv_master_pooled_r)
+summary(model.CS.r)
+metafor::forest(model.CS.r, slab=NA, xlab = "Calibration slope", alim=c(0.0, 2.0), 
+                refline=1, cex=1, cex.lab=1, top=0, mlab = "",
+                xlim=c(0.0, 3.0))
+mtext(footnote_r, side = 1, line = 4, adj = 1, cex = 1)
+```
+
+\newpage
+#### Figure 3: Model calibration and prediction density in held-out validation data
+Panels (a) to (c) show the calibration of the basic model, research model and XGBoost machine learning model respectively. Calibration is shown using a loess smoother. 95% confidence intervals are shown shaded in grey. Rug plots, shown on the x-axis, plot the distribution of predicted risk. Panels (d) to (f) show density plots for the 2-week mortality predictions made by the basic model, research model and XGBoost machine learning model respectively, stratified by 2-week mortality outcome.
+
+```{r fig3, echo=FALSE, fig.width=12, fig.height=8, warning=F, message=F}
+ggarrange(calibration_val_b, calibration_val_r, calibration_val_x,
+          prediction_density_basic_val,  prediction_density_research_val, prediction_density_x_val,
+          ncol = 3, nrow = 2, labels = c("a", "b", "c", "d", "e", "f"))
+```
+
+\newpage
+#### Table 2: Model performance in held-out validation data
+The table shows the performance in validation data for each of the primary models, secondary models, XGBoost machine learning model and Zhao et al.’s model. Brackets in the table headers refer to the outcome for which the model was trained. Validation outcome refers to the outcome in which model performance was assessed. Slope and calibration-in-the-large data are not reported for the primary models’ 10-week validation outcome, since the primary model was developed for the 2-week mortality outcome. Calibration-in-the-large data are not reported for Zhao et al.’s model as in order to reconstruct the model and assess calibration, the model intercept was recalibrated to our data.
+
+<br>
+
+```{r tab2, echo= F}
+validation_allmodel_performance <- rbind(
+  validation_results_main %>% mutate(model_category = 'Primary model'),
+  validation_results_mainmodel_10w %>% mutate(model_category = 'Primary model 10-week mortality'), 
+  validation_results_10weekmodel %>% mutate(model_category = '10-week model'),
+  validation_results_x %>% mutate(model_category = 'XGBoost Machine learning model'),
+  validation_results_zhao %>% mutate(model_category = 'Zhao et al. regression model')
+                       )
+
+validation_allmodel_performance <- validation_allmodel_performance %>%
+  select(model_category, Model, AUROC, Slope, CITL) %>%
+  mutate_at(vars('Slope', 'CITL'),  ~ replace(., row_number() %in% 3:4, "-")) %>%
+  arrange(Model) %>%
+  mutate(
+    val = case_when(
+    model_category == 'Primary model' | model_category == 'XGBoost Machine learning model' ~ '2 weeks',
+    model_category == 'Primary model 10-week mortality' | model_category == '10-week model' ~ '10 weeks',
+    model_category == 'Zhao et al. regression model' ~ '28 days'
+  )) %>%
+  mutate(model_category = ifelse(model_category == 'Primary model 10-week mortality', 
+                                 'Primary model', model_category)) %>%
+  mutate(model_category = case_when(
+    model_category == 'Primary model' ~ 'Primary models (2-week mortality)',
+    model_category == '10-week model' ~ 'Secondary models (10-week mortality)',
+    model_category == 'XGBoost Machine learning model' ~ 'Machine learning model (2-week mortality)',
+    model_category == 'Zhao et al. regression model' ~ 'Zhao et al. model (28-day mortality)',
+  )) %>% 
+  select(model_category, val, Model, AUROC, Slope, CITL) %>%
+  rename('Model Type' = model_category,
+         'Validation Outcome' = val)
+
+validation_allmodel_performance_table <- validation_allmodel_performance %>%
+  gt(rowname_col = 'Model',
+     groupname_col = 'Model Type') %>%
+  tab_style(style = cell_text(weight = "bold", align = 'center'), locations = cells_column_labels()) %>%
+  tab_style(style = cell_text(weight = 'bold'), locations = cells_row_groups()) %>%
+  cols_label(AUROC = 'C-statistic') %>% 
+  cols_align(columns = c(2, 4:6), align = 'center') %>%
+  tab_footnote(footnote = "Brackets indicate 95% confidence intervals", 
+               locations = cells_column_labels(columns = c(4:6))) %>%
+  tab_footnote(footnote = "CITL = Calibration-in-the-large",
+               locations = cells_column_labels(columns = c(6)))
+validation_allmodel_performance_table
+```
+
+\newpage
+#### Figure 4: Treatment Effect of the Oral Regimen (flucytosine (5FC) plus fluconazole (FLU)) and Ambition regimen vs. the 1-week amphotericin B deoxycholate (AmBd) plus 5FC regimen over a range of treatment model-predicted mortality
+Treatment effect, expressed as a hazard ratio for the Oral or Ambition regimens relative to 1-week of amphotericin B plus flucytosine (1wk AmBd + 5FC), is plotted logarithmically to base 2 on the y-axis. Predicted mortality, defined by either the Basic or Research model as per the panel labels, is plotted on the x-axis. Green, orange and red colouring represent the low-, medium- and high-risk terciles defined by the research model. Shaded regions represent 95% confidence intervals. The x-axis is foreshortened to a predicted mortality of 0.4, which encompasses >95% of the underlying data.
+
+```{r fig4, echo=F, warning=F, message=FALSE, fig.width= 8, fig.height=8}
+risk_treat_effect_plot_combined
+```
+
+\newpage
+## Supplementary Figures and Tables
+[insert methodology tables here]
+
+\newpage
+#### Supplementary Figure 3: Participant Flow Diagram
+```{r flowdiag, echo=F, warning=F, message=F, fig.width=4, fig.height=2}
+DiagrammeR::grViz("Flowdiagram.dot")
+```
+
+\newpage
+#### Supplementary Table 3: Participant characteristics split by development and validation datasets
+
+
+```{r tabs3, echo= F, fig.width= 12}
+tbl_summary_devval %>%
+  fontsize(size = 9, part = "all") %>%
+  set_table_properties(width = 1, layout = "autofit") %>%
+  align(align = "left", part = "all") %>%
+  valign(valign = "center", part = 'all')
+```
+
+\newpage
+#### Supplementary Figure 4: Multivariable associations between selected predictors and outcome in basic model
+Continuous variables were modeled using restricted cubic splines. The final model parameters are pooled across multiply imputed datasets (total sample size for model development = `r paste(samplesize_dev)` participants). For continuous variables, black lines represent point estimates and grey shaded regions represent 95% confidence intervals. For categorical variables, black dots represent point estimates and black lines represent 95% confidence intervals. Treatment arm 1 through 5 represent 1) the liposomal-amphotericin-B Ambition regimen and the 1-week amphotericin-B + flucytosine (1wk AmBd + 5FC) arms from both ACTA and Ambition-cm trials, 2) 1 week amphotericin-B + fluconazole, 3) 2 weeks amphotericin-B + flucytosine, 4) 2 weeks amphotericin-B + fluconazole and 5) flucytosine + fluconazole oral combination regimen, respectively. ECOG = Eastern Cooperative Oncology Group performance status; GCS = Glasgow Coma Scale.
+
+```{r figs3, echo=F, fig.width= 8, fig.height= 8}
+basic_plot_assoc_mi
+```
+
+\newpage
+#### Supplementary Table 4 and 5: Pooled model parameters for basic and research model
+Relationships between independent predictors and outcome are reported as model coefficients. ECOG = Eastern Cooperative Oncology Group performance status; CSF = cerebrospinal fluid; Qculture = quantitative culture; AmBd = Amphotericin B deoxycholate; 5FC = Flucytosine; FLU = Fluconazole. 
+
+#### Supplementary Table 4: Basic Model
+
+```{r tabs4, echo=F}
+basic_regress_table %>%
+   fontsize(size = 9, part = 'all') %>%
+   set_table_properties(width =  1, layout = "autofit") %>%
+   align(align = 'left', part = 'all') %>%
+   valign(valign = 'center', part = 'all')
+```
+
+
+\newpage
+#### Supplementary Table 5: Research Model
+
+```{r tabs5, echo=F}
+research_regress_table %>%
+   fontsize(size = 9, part = 'all') %>%
+   set_table_properties(width =  1, layout = "autofit") %>%
+   align(align = 'left', part = 'all') %>%
+   valign(valign = 'center', part = 'all')
+```
+
+\newpage
+#### Supplementary Figure 5: Pooled calibration plots across multiply imputed development datasets, both before and after recalibration of intercepts to country of origin. 
+a) basic model; b) research model; c) basic model post-recalibration; d) research model post-recalibration. Plots in red are before recalibration and plots in blue are post-recalibration. Calibration is shown using a loess smoother. Rug plots, shown on the x-axis, plot the distribution of predicted risk. 
+
+```{r figs4, echo= F, fig.width=18, fig.height= 12, warning= F, message= F}
+
+ggarrange(calibration_iecv_b, calibration_iecv_r, 
+     calibration_iecv_recal_b, calibration_iecv_recal_r,
+     ncol = 2, nrow = 2, labels = c("a", "b", "c", "d"))
+```
+
+\newpage
+#### Supplementary Table 6: Discriminatory performance of Basic and Research models in held-out validation data, by age and sex
+Basic and Research model discrimination, measured by c-statistic, in the held-out validation data is reported stratified by sex and age. Overall model discrimination in the same data is reported for comparison. Age categories were defined by the median age in the validation cohort. 95% confidence intervals are shown in brackets.
+
+```{r tabs6, echo=FALSE}
+validation_strat %>%
+  group_by(variable) %>% 
+  gt() %>% 
+  cols_label(strat = 'Variable',
+             sample_size = 'n') %>% 
+  tab_style(style = cell_text(weight = "bold"), locations = cells_column_labels())%>%
+  tab_style(style = cell_text(weight = "bold"), locations = cells_row_groups())
+```
+
+\newpage
+#### Supplementary Figure 6: Calibration of Zhao et al. model
+Calibration is shown using a loess-smoother across multiply imputed datasets. The original variable coefficients were extracted from Zhao et al's model, a model intercept was derived from our validation data, and a regression model constructed to allow the calculation of predicted risk. The rug plot indicates the distribution of predicted risk. 
+
+```{r figs5, echo=FALSE, fig.width=6, fig.height=6, warning=F, message=FALSE}
+calibration_val_z
+```
+
+\newpage
+#### Supplementary Figure 7: Decision Curve Analysis in held-out validation data
+Net benefit is shown for each candidate model with loess smoothing, compared to the single best predictor (ECOG), Zhao et al’s model, ‘treat all’ and ‘treat none’ approaches. As for supplementary figure 5, predictions from a regression model derived from Zhao model coefficients were used to avoid over-optimistic estimates of net benefit.
+
+```{r figs6, echo = F, warning= F, message= F, fig.width= 8, fig.height= 8}
+dca_plot_val_combined
+```
+
+\newpage
+#### Supplementary Table 7: Performance of single predictors included in main models in held-out validation data
+Individual factors making up both models were assessed for discriminatory ability against held-out validation data from Ambition trial in Malawi. Results sorted by C-statistic. Treatment arm was not included as all participants in the validation cohort received the same treatment factor level (1 week Amphotericin B + flucytosine or high-dose liposomal Amphotericin B). ECOG = Eastern Cooperative Oncology Group performance status; CSF = cerebrospinal fluid.
+
+
+```{r tabs7, echo= F}
+single_predictor_table
+```
+
+<br>
+
+#### Supplementary Table 8: Discrimination performance of the Basic and Research models compared to best single predictor (ECOG)
+C-statistic of the basic and research models are each compared to ECOG alone. C-statistic difference and associated standard errors were calculated using paired DeLong tests on each individual multiply imputed dataset, before being pooled using Rubin’s rules.
+
+```{r tabs8, echo=F}
+delong_baseline <- data.frame(
+  model = 'ECOG', cstat = '0.78 (0.71 - 0.85)', cstat_diff_ci = '-', p_value = '-'
+)
+
+delong_table %>%
+  mutate(cstat_diff_ci = as.character(cstat_diff_ci),
+         p_value = as.character(p_value)) %>%
+  mutate(cstat = ifelse(model == 'Basic', '0.78 (0.7 - 0.87)', '0.85 (0.79 - 0.92)')) %>% 
+  add_row(delong_baseline) %>% 
+  mutate(model = factor(model, levels = c('ECOG', 'Basic', 'Research'))) %>% 
+  arrange(model) %>%
+  select(model, cstat, cstat_diff_ci, p_value) %>% 
+  gt() %>% 
+  cols_label(model = 'Model',
+             cstat = 'C-statistic',
+             cstat_diff_ci = 'C-statistic difference',
+             p_value = 'p value') %>% 
+  tab_style(style = cell_text(weight = "bold"), locations = cells_column_labels())
+```
+
+\newpage
+#### Supplementary Table 9: Performance of single predictors included in main models by country in development data
+Individual factors making up both models were assessed for discriminatory ability in an internal-external cross validation approach in the development dataset. GCS = Glasgow Coma Scale; ECOG = Eastern Cooperative Oncology Group performance status; CSF = cerebrospinal fluid; Tan = Tanzania; Zam = Zambia; Zim = Zimbabwe; Bots = Botswana; SAfr = South Africa.
+
+
+```{r tabs9, echo= F}
+iecv_singlefactor_auc_table
+``` 
+
+\newpage
+#### Supplementary Figure 8: Associations between component variables in machine learning model
+Matrix plot in which each column represents associations with that component variable of the model. Plots shown in grey on the diagonal represent the multivariable relationship between that variable and the mortality outcome. Other plots in the column represent the interaction between the column variable and the labelled row variables. Where the row variable is categorical, these interactions are plotted as separate lines representing the relationship between different levels of the row variable. Where the row variable is continuous, these lines represent quartiles of this variable. Treatment arm 1 through 5 represent 1) the liposomal-Amphotericin-B Ambition regimen and the 1 week Amphotericin-B + Flucytosine arms from both ACTA and Ambition-cm trials, 2) 1 week Amphotericin-B + Fluconazole, 3) 2 weeks Amphotericin-B + Flucytosine, 4) 2 weeks Amphotericin-B + Fluconazole and 5) Flucytosine + Fluconazole oral regimen, respectively.  
+
+```{r figs7, echo=FALSE, fig.width = 15, fig.height= 15, dpi= 600}
+marginals_plot_x
+```
+
+\newpage
+#### Supplementary Table 10: XGBoost Machine Learning model Variable Importance
+Variable importance is a measure of the contribution of individual variables to the model's predictive accuracy. Relative importance is reported here, where variable importance is scaled relative to the most important variable, which takes a value of 100. A variable of importance 50 contributes 50% as much to the model predictive accuracy as the most important variable. A relative importance of 0 indicates no contribution to predictive accuracy. For continuous variables, relative importance takes a single value. For categorical variables, relative importance takes a value for each of the possible values of that variable, excluding the 'baseline' value; relative importance is reported as a hyphen for the latter. Categorical variable levels are ordered by relative importance.
+
+```{r tabs10, echo=F}
+xgb_variableimport %>%
+  # group_by(Variable) %>%
+  gt() %>% 
+  cols_label(`Variable Importance` = 'Relative Importance') %>% 
+  tab_style(style = cell_text(weight = "bold"), locations = cells_column_labels()) %>%
+  tab_style(style = cell_text(style = "italic"), locations = cells_row_groups()) %>%
+  tab_footnote(footnote = 'QCC = Quantitative cryptococcal culture; AmBd = Amphotericin B deoxycholate; FLU = Fluconazole; 5FC = Flucytosine',locations = cells_column_labels(columns = c(1)))
+```
+
+\newpage
+#### Supplementary Figure 9: Internal-external cross validation results for the XGBoost Machine Learning model
+Pooled estimates are calculated through random-effects meta-analysis (total sample size = `r paste(samplesize_dev)` participants). Countries with n < 100 participants or x < 20 deaths were amalgamated and grouped by similarity of healthcare environment. Dashed lines indicate lines of perfect calibration in the large (0) and slope (1), respectively. Black squares indicate point estimates; bars indicate 95% confidence intervals; diamonds indicate pooled random-effects meta-analysis estimates. I2 values for c-statistic, calibration-in-the-large and calibration slope are shown in the figure footer.
+Bots = Botswana; SAfr = South Africa; Tan = Tanzania; Zam = Zambia; Zim = Zimbabwe.
+
+<br>
+
+```{r figs8, echo=FALSE, fig.width= 12, fig.height= 8, results='hide'}
+footnote_x <- paste0('I^2 values for c-statistic, calibration-in-the-large and calibration slope = ', x_cstat_i2, ', ', x_citl_i2, ' and ', x_slope_i2, ', respectively.')
+
+par(fig=c(0,0.4,0,1))
+model.cstat.x <- rma(yi = cstat, sei = cstat.se,  method = "REML", test = "knha", data = iecv_master_pooled_x)
+summary(model.cstat.x)
+metafor::forest(model.cstat.x,
+                slab=iecv_master_pooled_x$location, xlab = "C-statistic", 
+                alim=c(0.7, 1.0), cex=1, cex.lab=1, top=0,mlab = "Meta-analysis",
+                xlim=c(0.5, 1.2), at=c(0.7, 0.8, 0.9, 1.0))
+par(fig=c(0.4,0.7, 0,1), new=T)
+model.CITL.x <- rma(yi = citl, sei = citl.se, method = "REML",test = "knha", data = iecv_master_pooled_x)
+summary(model.CITL.x)
+metafor::forest(model.CITL.x, slab=NA, xlab = "Calibration in the large", alim=c(-2.0, 2.0), 
+                refline=0, cex=1, cex.lab=1, top=0, mlab = "",
+                xlim=c(-2.5, 4.8), at=c(-2, -1, 0, 1, 2))
+par(fig=c(0.7,1, 0,1), new=T)
+model.CS.x <- rma(yi = calslope, sei = calslope.se, method = "REML", test = "knha", data = iecv_master_pooled_x)
+summary(model.CS.x)
+metafor::forest(model.CS.x, slab=NA, xlab = "Calibration slope", alim=c(0.0, 1.5), 
+                refline=1, cex=1, cex.lab=1, top=0, mlab = "",
+                xlim=c(0.0, 3.0), at=c(0, 0.5, 1.0, 1.5))
+mtext(footnote_x, side = 1, line = 4, adj = 1, cex = 1)
+```
+
+
+\newpage
+#### Supplementary Table 11: Variables selected into retrained 10-week mortality model
+Variable selection was done in each imputed dataset using backward elimination using AIC.
+Variables retained in >50% of multiply imputed datasets were selected into the model.ECOG = Eastern Cooperative Oncology Group performance status; CSF = cerebrospinal fluid; MI = multiple imputation.
+
+<br>
+
+```{r tabs11, echo=F}
+table_var_sel_complete_10week
+```
+
+\newpage
+#### Supplementary Figure 10: Multivariable model associations in predictors selected in retrained 10-week model
+Supplementary Figure 10a shows the associations in the retrained basic model and is shown first, with 10b showing the associations in the retrained research model. Continuous variables were modeled using restricted cubic splines. The final model parameters are pooled across multiply imputed datasets (total sample size for model development = `r paste(samplesize_dev)` participants). For continuous variables, black lines represent point estimates and grey shaded regions represent 95% confidence intervals. For categorical variables, black dots represent point estimates and black lines represent 95% confidence intervals. Treatment arm 1 through 5 represent 1) the liposomal-amphotericin-B Ambition regimen and the 1-week amphotericin-B + flucytosine (1wk AmBd + 5FC) arms from both ACTA and Ambition-cm trials, 2) 1 week amphotericin-B + fluconazole, 3) 2 weeks amphotericin-B + flucytosine, 4) 2 weeks amphotericin-B + fluconazole and 5) flucytosine + fluconazole oral combination regimen, respectively. ECOG = Eastern Cooperative Oncology Group performance status; GCS = Glasgow Coma Scale; CSF = cerebrospinal fluid.
+```{r figs9a, echo=FALSE, fig.width= 8, fig.height= 12}
+ggarrange(basic_plot_assoc_mi_10, labels = c('a'))
+```
+
+```{r figs9b, echo= F, fig.width= 9, fig.height= 9}
+ggarrange(plot_associations_r_mi_10, labels = c('b'))
+```
+
+\newpage
+#### Supplementary Tables 12 and 13: Pooled model parameters for basic and research 10-week model
+Relationships between independent predictors and outcome are reported as model coefficients. ECOG = Eastern Cooperative Oncology Group performance status; CSF = cerebrospinal fluid; Qculture = quantitative culture; AmBd = Amphotericin B deoxycholate; 5FC = Flucytosine; FLU = Fluconazole.
+
+#### Supplementary Table 12: Basic 10-week model
+<br>
+```{r tabs12, echo=F}
+basic_regress_table_10w %>%
+   fontsize(size = 9, part = 'all') %>%
+   set_table_properties(width =  1, layout = "autofit") %>%
+   align(align = 'left', part = 'all') %>%
+   valign(valign = 'center', part = 'all')
+```
+
+\newpage
+#### Supplementary Table 13: Research 10-week model
+<br>
+```{r tabs13, echo=F}
+research_regress_table_10w %>%
+   fontsize(size = 9, part = 'all') %>%
+   set_table_properties(width =  1, layout = "autofit") %>%
+   align(align = 'left', part = 'all') %>%
+   valign(valign = 'center', part = 'all')
+```
+
+\newpage
+#### Supplementary Figure 11: Calibration plots of retrained 10-week mortality model in held-out validation data 
+(a) Basic Treatment Model; (b) Research Treatment Model
+
+```{r figs10, echo = F, warning= F, message=FALSE, fig.width= 6, fig.height= 8}
+ggarrange(calibration_val_b_10week, calibration_val_r_10week, labels = c('a', 'b'), nrow = 2)
+```
+
+
+\newpage
+#### Supplementary Figure 12: Distribution of predicted mortality risk by risk tercile.
+Boxplots and density plots showing the distribution of predicted 2-week mortality across the total MI cohort. Boxplots A and C show the distribution of risk by tercile, as derived from the Basic Model (A) and Research Model (C). Horizontal dashed lines represent the threshold of predicted mortality delineating each tercile. Tercile thresholds in the basic model predictions were `r round(tercile_thresholds_b[1],3)` and `r round(tercile_thresholds_b[2], 3)` for Low/Medium Risk and Medium/High Risk respectively. Tercile thresholds in the research model were `r round(tercile_thresholds_r[1], 3)` and `r round(tercile_thresholds_r[2], 3)` respectively. Density plots B and D show the distribution of predicted risk across the total MI cohort, derived from the Basic Model (B) and Research Model (D). Vertical dashed lines delineate the tercile-derived thresholds of risk from (A) and (C), respectively. For the Basic Model, the median (IQR) mortality risk prediction was `r paste0(basic_pred_stats[2], ' (', basic_pred_stats[3], ' to ', basic_pred_stats[4], ')')` and the modal prediction was `r round(basic_pred_stats[5], 2)`. For the Research Model, the median (IQR) mortality risk prediction was `r paste0(research_pred_stats[2], ' (', research_pred_stats[3], ' to ', research_pred_stats[4], ')')` and the modal prediction was `r round(research_pred_stats[5], 2)`.  
+
+```{r figs11, echo=F, fig.width= 7, fig.height=7, warning=F, message=F}
+box_dens_arranged_nonrotated
+```
+
+\newpage
+#### Supplementary Table 14: Ten-week mortality by Treatment Arm and Risk Tercile
+Table showing 10-week mortality, stratified by risk tercile as defined by the Basic and Research Models. Deaths are reported for the Fluconazole + Flucytosine arm of the ACTA trial (Oral regimen), the single dose liposomal Amphotericin B arm (Ambition regimen) of the Ambition trial, and the 1-week Amphoterocin B + Flucytosine arm of each of their respective trials. The Oral regimen in the ACTA trial and the Ambition regimen arm of the Ambition trial are labelled Intervention, and the 1-week Amphoterocin B + Flucytosine arm is labelled standard of care (SOC). Deaths, mortality differences and hazard ratios are compared between the intervention (Oral regimen or Ambition regimen) and the standard of care for that trial and reported stratified by model and risk tercile. Deaths are described directly from the data and exclude patients for whom a risk category could not be attributed due to missing data. Mortality Difference and Hazard Ratios were calculated using multiply imputed data to account for missingness of predictor variables.
+
+
+```{r tabs14, echo=FALSE}
+ambition_treat_effect_summary1 <- ambition_treat_effect_summary %>%
+  rename(intervention_death = Ambisome)
+
+acta_treat_effect_summary1 <- acta_treat_effect_summary %>%
+  rename(intervention_death = Oral_regimen)
+
+treat_effect_summary <- rbind(
+  acta_treat_effect_summary1 %>% mutate(intervention = 'ACTA - Oral Regimen'),
+  ambition_treat_effect_summary1 %>% mutate(intervention = 'Ambition - Ambition Regimen')
+)
+
+treat_effect_table <- treat_effect_summary %>%
+  select(intervention, model, risk_group, AmBd_1wk, intervention_death, mort_diff, p.value.mort, HR, p.value.hr) %>%
+  group_by(intervention, model) %>%
+  gt(rowname_col = 'risk_group') %>%
+  tab_spanner(columns = c(4:5), label = "Deaths") %>%
+  tab_spanner(columns = c(6:7), label = "Mortality Difference") %>%
+  tab_spanner(columns = c(8:9), label = "Hazard Ratio") %>%
+  cols_label(AmBd_1wk = "SOC",
+             intervention_death = "Intervention",
+             mort_diff = "Intervention v SOC",
+             p.value.mort = "p value",
+             HR = "Intervention v SOC",
+             p.value.hr = "p value") %>%
+  tab_style(style = cell_text(weight = "bold", align = 'center'), locations = cells_column_labels()) %>%
+  tab_style(style = cell_text(weight = "bold"), locations = cells_column_spanners()) %>%
+  tab_style(style = cell_text(weight = 'bold'), locations = cells_row_groups()) %>%
+  tab_footnote(footnote = paste0("Risk groups were defined by terciles of predicted risk in the pooled dataset. Thresholds of ", 
+                                 round((tercile_thresholds_b[1] * 100), 1), "% and ", 
+                                 round((tercile_thresholds_b[2] * 100), 1), "% delineated Low-Medium and Medium-High risk respectively in the basic 
+                                 treatment model. 
+               Thresholds of ", round((tercile_thresholds_r[1] * 100), 1), "% and ", round((tercile_thresholds_r[2] * 100), 1), 
+                                 "% delineated Low-Medium and Medium-High risk respectively in the research treatment model."),
+               locations = cells_row_groups()) %>%
+  tab_footnote(footnote = "SOC = Standard of Care", locations = cells_column_labels(columns = c(4,6,8))) %>%
+  tab_footnote(footnote = "Brackets indicate proportions", 
+               locations = cells_column_labels(columns = c(4:5))) %>%
+  tab_footnote(footnote = "Brackets indicate 95% confidence intervals", 
+               locations = cells_column_labels(columns = c(6,8))) 
+
+treat_effect_table
+```
+

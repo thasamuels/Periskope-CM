@@ -1,6 +1,6 @@
-# Cryptococcal meningitis prognostic model
+# Cryptococcal meningitis prognostic model - Periskope-CM
 # 01: Data Prep
-# Description: Cleaning and Labeling of variables. Interrogation of pattern of missingness. 
+# Description: Cleaning and labelling of variables. 
 # Started: 27/09/2023
 # Author: Tom Samuels, University College London
 

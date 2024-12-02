@@ -1,0 +1,31 @@
+digraph {
+                  graph[layout = dot]
+                  
+                  node [shape = rectangle, fillcolor = White]
+                  acta1 [label = '@@1']
+                  acta2 [label = '@@2']
+                  amb1 [label = '@@3']
+                  amb2 [label = '@@4']
+                  invis1 [shape=point style=invis]
+                  combined [label = '@@5']
+                  invis2 [shape=point style=invis]
+                  dev [label = '@@6']
+                  val [label = '@@7']
+                  
+                  acta1 -> acta2 [color = 'black']
+                  amb1 -> amb2 [color = 'black']
+                  acta2 -> invis1 [headclip=false] [color = "black"] [arrowhead=none]
+                  amb2 -> invis1 [headclip=false] [color = "black"] [arrowhead=none]
+                  invis1 -> combined [tailclip=false] [color = 'black']
+                  combined -> invis2 [headclip=false] [color = 'black'] [arrowhead=none]
+                  invis2 -> dev [tailclip=false] [color = 'black']
+                  invis2 -> val [tailclip=false] [color = 'black']
+                  }
+                  
+                  [1]: paste0(flowchart_data$total_acta, ' participants recruited to ACTA trial \n', flowchart_data$acta_miss, ' participants lost to follow up')
+                  [2]: paste0(flowchart_data$ss_acta, ' participants completed follow-up \n Deaths at 2 weeks: ', flowchart_data$d2_acta, '\n Deaths at 10 weeks: ', flowchart_data$d10_acta)
+                  [3]: paste0(flowchart_data$ss_amb, ' participants recruited to Ambition-CM trial \n', flowchart_data$amb_miss, ' participants lost to follow up')
+                  [4]: paste0(flowchart_data$ss_amb, ' participants completed follow-up \n Deaths at 2 weeks: ', flowchart_data$d2_amb, '\n Deaths at 10 weeks: ', flowchart_data$d10_amb)
+                  [5]: paste0(flowchart_data$ss_total, ' participants in total sample \n Deaths at 2 weeks: ', flowchart_data$d2_total, '\n Deaths at 10 weeks: ', flowchart_data$d10_total)
+                  [6]: paste0(flowchart_data$ss_dev, ' participants included in Development dataset \n Deaths at 2 weeks: ', flowchart_data$d2_dev, '\n Deaths at 10 weeks: ', flowchart_data$d10_dev)
+                  [7]: paste0(flowchart_data$ss_val, ' participants included in Validation dataset \n Deaths at 2 weeks: ', flowchart_data$d2_val, '\n Deaths at 10 weeks: ', flowchart_data$d10_val)
